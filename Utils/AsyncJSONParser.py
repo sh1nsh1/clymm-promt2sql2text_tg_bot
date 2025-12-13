@@ -1,3 +1,4 @@
+from Models import Video
 import aiofiles
 import ijson
 
@@ -43,3 +44,16 @@ class AsyncJSONParser:
                 cur_video["snapshots"].append(cur_snapshot)
                 cur_snapshot = None
                 is_in_snapshot = False
+
+    @staticmethod
+    async def stream_json_pydantic(file_path: str):
+        import aiofiles
+        import ijson
+        
+        async with aiofiles.open(file_path, 'rb') as f:
+            videos = ijson.items_async(f, 'videos.item')
+            
+            async for video_data in videos:
+                # Автоматическая десериализация в Pydantic объект
+                video = Video(**video_data)
+                yield video
