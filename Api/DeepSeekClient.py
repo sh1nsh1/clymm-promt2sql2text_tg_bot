@@ -7,6 +7,7 @@ class __DeepSeekClient:
     system_message = """
 Ты получаешь некоторый запрос на русском языке в свободной форме.
 А возвращаешь голый sql-запрос, отвечайющий требованиям запроса, и без Markdown-форматирования.
+
 В базе данных две следующие таблицы:
     CREATE TABLE IF NOT EXISTS videos (
         id UUID PRIMARY KEY,
@@ -45,6 +46,9 @@ class __DeepSeekClient:
             REFERENCES videos(id) 
             ON DELETE CASCADE,
     );
+
+Если запрос пользователя не относится к базе данных или из него невозможно составить sql-запрос, верни следующи запрос:
+    select -1;
 """
 
     def __init__(self, api_key: str = None):
