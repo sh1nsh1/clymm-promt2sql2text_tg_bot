@@ -13,7 +13,8 @@ class DataLoader:
         )
     
     @staticmethod
-    async def trancate_db():
+
+    async def truncate_db():
         conn = await DataLoader.__get_connection()
         await conn.execute('TRUNCATE TABLE video_snapshots CASCADE;')
         await conn.execute('TRUNCATE TABLE videos CASCADE;')
@@ -73,7 +74,8 @@ class DataLoader:
     @staticmethod
     async def load_data(from_path:str):
         ...
-        async for video in AsyncJSONParser.parse_file(from_path):
+        # async for video in AsyncJSONParser.parse_file(from_path):
+        async for video in AsyncJSONParser.stream_json_pydantic(from_path):
             await DataLoader.__insert_video(video)
             await DataLoader.__insert_video_stapshots(video["snapshots"])
 

@@ -3,9 +3,13 @@ from Db.DataLoader import DataLoader
 from dotenv import load_dotenv
 import asyncio
 
-load_dotenv()
+async def main():
+    load_dotenv()
 
-asyncio.run(DataLoader.init_db())
-asyncio.run(DataLoader.trancate_db())
-asyncio.run(DataLoader.load_data("videos.json"))
-asyncio.run(Bot.main())
+    await DataLoader.init_db()
+    await DataLoader.truncate_db()
+    await DataLoader.load_data("videos.json")
+    await Bot.main()
+
+if __name__ == "__main__":
+    asyncio.run(main())
