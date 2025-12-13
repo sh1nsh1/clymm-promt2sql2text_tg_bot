@@ -1,0 +1,19 @@
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'user') THEN
+    CREATE USER "user" WITH PASSWORD 'password';
+  END IF;
+END
+$$;
+
+GRANT ALL PRIVILEGES ON DATABASE mydatabase TO "user";
+
+\c mydatabase
+
+CREATE TABLE IF NOT EXISTS users (
+  id SERIAL PRIMARY KEY,
+  username VARCHAR(50) UNIQUE NOT NULL
+);
+
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO "user";
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO "user";
