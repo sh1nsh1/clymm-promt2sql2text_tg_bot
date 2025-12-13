@@ -13,8 +13,16 @@ class DataLoader:
         )
     
     @staticmethod
+    async def trancate_db():
+        conn = await DataLoader.__get_connection()
+        await conn.execute('TRUNCATE TABLE video_snapshots CASCADE;')
+        await conn.execute('TRUNCATE TABLE videos CASCADE;')
+        await conn.close()
+
+    @staticmethod
     async def init_db():
         conn = await DataLoader.__get_connection()
+        
         await conn.execute(
             '''
             CREATE TABLE IF NOT EXISTS videos (

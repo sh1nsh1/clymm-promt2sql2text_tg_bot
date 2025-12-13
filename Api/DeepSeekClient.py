@@ -61,7 +61,7 @@ class __DeepSeekClient:
         prompt: str,
         model: str = "deepseek-chat",
         system_message: str = system_message,
-        temperature: float = 0.5,
+        temperature: float = 0.7,
         max_tokens: int = 2048,
         stream: bool = False
     ) -> Dict[str, Any]:
