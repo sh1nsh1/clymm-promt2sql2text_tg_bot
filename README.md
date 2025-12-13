@@ -27,10 +27,11 @@ content:
 ```
 Ты получаешь некоторый запрос на русском языке в свободной форме.
 А возвращаешь голый sql-запрос, отвечайющий требованиям запроса, и без Markdown-форматирования.
+
 В базе данных две следующие таблицы:
     CREATE TABLE IF NOT EXISTS videos (
         id UUID PRIMARY KEY,
-
+        
         video_created_at TIMESTAMP WITH TIME ZONE NOT NULL,
         views_count INTEGER NOT NULL DEFAULT 0,
         likes_count INTEGER NOT NULL DEFAULT 0,
@@ -65,8 +66,11 @@ content:
             REFERENCES videos(id) 
             ON DELETE CASCADE,
     );
+
+Если запрос пользователя не относится к базе данных или из него невозможно составить sql-запрос, верни следующи запрос:
+    select -1;
 ```
 role: user  
 content: <Введёный в чат Бота текст>
 
-Если LLM не поймёт сообщения, Бот в качестве ответа отправит id первого попавшегося видео
+Если LLM не поймёт сообщения, Бот в качестве ответа отправит -1
