@@ -171,7 +171,7 @@ class __DeepSeekClient:
 
 
 
-async def get_sql_from_promt(prompt):
+async def get_sql_from_prompt(prompt):
     api_key = dict(os.environ)["DEEPSEEK_API_KEY"]
     client = __DeepSeekClient(api_key)
     result = await client.send_request(
