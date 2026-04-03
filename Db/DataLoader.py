@@ -1,3 +1,4 @@
+import logging
 from Utils.AsyncJSONParser import AsyncJSONParser
 from datetime import datetime
 import asyncpg
@@ -7,11 +8,13 @@ import os
 
 class DataLoader:
     @staticmethod
-    async def __get_connection():
-        return await asyncpg.connect(
+    async def __get_connection() -> asyncpg.Connection:
+        conn = await asyncpg.connect(
             os.getenv("DATABASE_URL")
         )
-    
+        return conn
+
+
     @staticmethod
 
     async def truncate_db():
@@ -23,20 +26,20 @@ class DataLoader:
     @staticmethod
     async def init_db():
         conn = await DataLoader.__get_connection()
-        
+
         await conn.execute(
             '''
             CREATE TABLE IF NOT EXISTS videos (
                 id UUID PRIMARY KEY,
-                
+
                 video_created_at TIMESTAMP WITH TIME ZONE NOT NULL,
                 views_count INTEGER NOT NULL DEFAULT 0,
                 likes_count INTEGER NOT NULL DEFAULT 0,
                 reports_count INTEGER NOT NULL DEFAULT 0,
                 comments_count INTEGER NOT NULL DEFAULT 0,
-                
+
                 creator_id VARCHAR(64) NOT NULL,
-                
+
                 created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
             );
@@ -46,25 +49,25 @@ class DataLoader:
             '''
             CREATE TABLE IF NOT EXISTS video_snapshots (
                 id VARCHAR(64) PRIMARY KEY,
-                
+
                 video_id UUID NOT NULL,
-                
+
                 views_count INTEGER NOT NULL DEFAULT 0,
                 likes_count INTEGER NOT NULL DEFAULT 0,
                 reports_count INTEGER NOT NULL DEFAULT 0,
                 comments_count INTEGER NOT NULL DEFAULT 0,
-                
+
                 delta_views_count INTEGER NOT NULL DEFAULT 0,
                 delta_likes_count INTEGER NOT NULL DEFAULT 0,
                 delta_reports_count INTEGER NOT NULL DEFAULT 0,
                 delta_comments_count INTEGER NOT NULL DEFAULT 0,
-                
+
                 created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                
-                CONSTRAINT fk_video_snapshots_video 
-                    FOREIGN KEY (video_id) 
-                    REFERENCES videos(id) 
+
+                CONSTRAINT fk_video_snapshots_video
+                    FOREIGN KEY (video_id)
+                    REFERENCES videos(id)
                     ON DELETE CASCADE
             );
             '''
@@ -80,13 +83,20 @@ class DataLoader:
             await DataLoader.__insert_video_stapshots(video["snapshots"])
 
     @staticmethod
-    async def fetch(sql):
+    async def fetch(sql) -> dict[int, dict]:
+        logger = logging.getLogger(__name__)
         conn = await DataLoader.__get_connection()
         try:
-            result = await conn.fetchrow(sql)
-            return result
+            logger.debug("fetch")
+            records:list[asyncpg.Record] = await conn.fetch(sql)
+            logger.debug(f"records count {len(records)}")
+            data = {}
+            for i in range(1, len(records)+1):
+                data[i] = dict(records[i-1].items())
+            return data
         except Exception as e:
-            return f"PG error: {e}"
+            logger.error(e)
+            return {}
         finally:
             await conn.close()
 
@@ -118,7 +128,7 @@ class DataLoader:
         datetime.fromisoformat(video['created_at'].replace('Z', '+00:00')),
         datetime.fromisoformat(video['updated_at'].replace('Z', '+00:00'))
         )
-        await conn.close()    
+        await conn.close()
 
     @staticmethod
     async def __insert_video_stapshots(snapshots):
@@ -150,6 +160,3 @@ class DataLoader:
             ]
         )
         await conn.close()
-    
-
-    
